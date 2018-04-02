@@ -1,0 +1,6 @@
+{
+  "Evolve.ConnectionString": "Host=localhost;Username=postgres;Password=postgres;Database=todo",
+  "Evolve.Driver": "Npgsql",
+  "Evolve.Locations": "db",
+  "Evolve.Command": "migrate"
+}
