@@ -9,34 +9,35 @@ public class Ok<T>
   public T Data { get; set; }
 }
 
-[Route("api/[controller]")]
-public class TodoController
+namespace HelloDotnetCoreApi.Controllers
 {
-  private IConfiguration _config;
-
-  public TodoController(IConfiguration config)
+  [Route("api/[controller]")]
+  public class TodoController
   {
-    _config = config;
-  }
+    private IConfiguration _config;
 
-  [HttpGet]
-  public Ok<Todo[]> list()
-  {
-
-    using (var conn = new NpgsqlConnection(_config.GetConnectionString("todo")))
+    public TodoController(IConfiguration config)
     {
-      conn.Open();
-
-      var todos = new List<Todo>();
-      using (var cmd = new NpgsqlCommand("select id, description from todo", conn))
-      using (var reader = cmd.ExecuteReader())
-        while (reader.Read())
-          todos.Add(new Todo { Id = reader.GetInt32(0), Description = reader.GetString(1) });
-
-      return new Ok<Todo[]> { Data = todos.ToArray() };
-
-      // return new Ok<Todo[]> { Data = new Todo[] { new Todo { Desc = "Wow" } } };
+      _config = config;
     }
 
+    [HttpGet]
+    public Ok<Todo[]> list()
+    {
+
+      using (var conn = new NpgsqlConnection(_config.GetConnectionString("todo")))
+      {
+        conn.Open();
+
+        var todos = new List<Todo>();
+        using (var cmd = new NpgsqlCommand("select id, description from todo", conn))
+        using (var reader = cmd.ExecuteReader())
+          while (reader.Read())
+            todos.Add(new Todo { Id = reader.GetInt32(0), Description = reader.GetString(1) });
+
+        return new Ok<Todo[]> { Data = todos.ToArray() };
+      }
+
+    }
   }
 }
