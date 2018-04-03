@@ -27,17 +27,23 @@ namespace HelloDotnetCoreApi.Data
       {
         conn = OpenConnection();
 
-        // using (var cmd = conn.CreateCommand()) {
+        using (var cmd = conn.CreateCommand())
+        {
 
-        //   cmd.Connection = conn;
-        //   cmd.CommandText = statement;
-        //   foreach (var asdf in parameters) {
+          cmd.Connection = conn;
+          cmd.CommandText = statement;
 
-        //   }
-        // cmd.ExecuteNonQuery();
-        // }
-        
-        // conn.Execute(statement, parameters);
+          foreach (var prop in parameters.GetType().GetProperties())
+          {
+            var param = cmd.CreateParameter();
+            // TODO: verify - is this the correct named param format?
+            param.ParameterName = ":" + prop.Name;
+            param.Value = prop.GetValue(parameters);
+            cmd.Parameters.Add(param);
+          }
+
+          cmd.ExecuteNonQuery();
+        }
       }
       finally
       {

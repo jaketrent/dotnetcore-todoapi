@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using HelloDotnetCoreApi.Models;
+using HelloDotnetCoreApi.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
@@ -15,10 +16,12 @@ namespace HelloDotnetCoreApi.Controllers
   public class TodoController
   {
     private IConfiguration _config;
+    private ITodoRepository _repo;
 
-    public TodoController(IConfiguration config)
+    public TodoController(IConfiguration config, ITodoRepository repo)
     {
       _config = config;
+      _repo = repo;
     }
 
     [HttpGet]
@@ -37,6 +40,16 @@ namespace HelloDotnetCoreApi.Controllers
 
         return new Ok<Todo[]> { Data = todos.ToArray() };
       }
+
+    }
+
+    [HttpPost]
+    public Ok<Todo[]> create([FromBody] TodoCreateModel viewModel)
+    {
+      var todo = new Todo { Description = viewModel.Description };
+      _repo.create(todo);
+
+      return new Ok<Todo[]> { Data = new[] { todo } };
 
     }
   }
