@@ -47,9 +47,9 @@ namespace HelloDotnetCoreApi.Controllers
     public Ok<Todo[]> create([FromBody] TodoCreateModel viewModel)
     {
       var todo = new Todo { Description = viewModel.Description };
-      _repo.create(todo);
+      var newTodo = _repo.create(todo);
 
-      return new Ok<Todo[]> { Data = new[] { todo } };
+      return new Ok<Todo[]> { Data = new[] { newTodo } };
 
     }
   }

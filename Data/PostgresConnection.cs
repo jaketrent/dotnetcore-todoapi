@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Data;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
@@ -8,7 +9,12 @@ namespace HelloDotnetCoreApi.Data
 
   public interface IPostgresConnection
   {
-    void WriteData(string statement, object parameters = null);
+    IEnumerable<T> WriteData<T>(string statement, IRowMapper<T> rowMapper, object parameters = null);
+  }
+
+  public interface IRowMapper<T>
+  {
+    T mapRow(IDataReader reader);
   }
 
   public class PostgresConnection : IPostgresConnection
@@ -19,9 +25,11 @@ namespace HelloDotnetCoreApi.Data
     {
       _config = config;
     }
-    public void WriteData(string statement, object parameters = null)
+    public IEnumerable<T> WriteData<T>(string statement, IRowMapper<T> rowMapper, object parameters = null)
     {
       IDbConnection conn = null;
+
+      var retvals = new List<T>();
 
       try
       {
@@ -36,19 +44,26 @@ namespace HelloDotnetCoreApi.Data
           foreach (var prop in parameters.GetType().GetProperties())
           {
             var param = cmd.CreateParameter();
-            // TODO: verify - is this the correct named param format?
             param.ParameterName = ":" + prop.Name;
             param.Value = prop.GetValue(parameters);
             cmd.Parameters.Add(param);
           }
 
-          cmd.ExecuteNonQuery();
+          using (var reader = cmd.ExecuteReader())
+          {
+            while (reader.Read())
+            {
+              retvals.Add(rowMapper.mapRow(reader));
+            }
+          }
         }
       }
       finally
       {
         CloseConnection(conn);
       }
+
+      return retvals;
     }
 
     private IDbConnection OpenConnection()
